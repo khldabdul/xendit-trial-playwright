@@ -1,0 +1,74 @@
+{
+  "compilerOptions": {
+    // Strict mode settings
+    "strict": false,
+    "strictNullChecks": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": false,
+    "noImplicitReturns": false,
+    "noUncheckedIndexedAccess": false,
+    "noImplicitOverride": false,
+    "forceConsistentCasingInFileNames": true,
+
+    // Module resolution
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "resolveJsonModule": true,
+    "allowJs": false,
+    "checkJs": false,
+
+    // Emit settings (for type checking only)
+    "noEmit": true,
+    "declaration": false,
+    "declarationMap": false,
+    "sourceMap": true,
+    "inlineSourceMap": false,
+    "inlineSources": false,
+
+    // Interop
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": false,
+
+    // Skip type checking of declaration files (node_modules, .d.ts)
+    "skipLibCheck": true,
+
+    // Path aliases
+    "baseUrl": ".",
+    "paths": {
+      // Core framework (src/)
+      "@/*": ["src/*"],
+      "@/fixtures/*": ["src/fixtures/*"],
+      "@/decorators/*": ["src/decorators/*"],
+      "@/pages/*": ["src/pages/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/types/*": ["src/types/*"],
+      "@/config/*": ["src/config/*"],
+      "@/hooks/*": ["src/hooks/*"],
+
+      // Xendit apps
+      "@xendit/*": ["apps/e2e/xendit/*"],
+      "@xendit-pages": ["apps/e2e/xendit/pages/index.ts"],
+      "@xendit-fixtures": ["apps/e2e/xendit/fixtures/index.ts"],
+      "@xendit-tests": ["apps/e2e/xendit/tests"],
+
+      "@xendit-api/*": ["apps/api/xendit/*"],
+      "@xendit-api-clients": ["apps/api/xendit/clients/index.ts"],
+      "@xendit-api-fixtures": ["apps/api/xendit/fixtures/index.ts"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": [
+    "node_modules",
+    "test-results",
+    "playwright-report",
+    "allure-results",
+    "allure-report",
+    "dist",
+    "build"
+  ]
+}

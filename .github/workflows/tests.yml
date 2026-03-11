@@ -1,0 +1,308 @@
+# Playwright Test CI/CD Pipeline
+#
+# Runs tests on push and pull requests to main branch.
+
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  checks: write
+
+# Cancel in-progress runs for the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================================================
+  # Type Checking and Linting
+  # ============================================================================
+  type-check:
+    name: Type Check & Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run TypeScript type check
+        run: pnpm type-check
+
+      - name: Run ESLint
+        run: pnpm lint
+
+  # ============================================================================
+  # E2E Tests - Xendit
+  # ============================================================================
+  e2e-xendit:
+    name: E2E - Xendit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: type-check
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Xendit E2E tests
+        env:
+          CI: true
+          # Note: Xendit API keys should be set in GitHub repository secrets
+          XENDIT_API_KEY: ${{ secrets.XENDIT_API_KEY }}
+        run: pnpm test --project=e2e-xendit
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xendit-e2e-test-results
+          path: |
+            test-results/
+            playwright-report/
+            allure-results/
+          retention-days: 30
+
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xendit-e2e-failure-screenshots
+          path: test-results/**/screenshot-*.png
+          retention-days: 30
+
+  # ============================================================================
+  # API Tests - Xendit
+  # ============================================================================
+  api-xendit:
+    name: API - Xendit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: type-check
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Xendit API tests
+        env:
+          CI: true
+          # Note: Xendit API keys should be set in GitHub repository secrets
+          XENDIT_API_KEY: ${{ secrets.XENDIT_API_KEY }}
+        run: pnpm test --project=api-xendit
+
+      - name: Upload API test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xendit-api-test-results
+          path: |
+            test-results/
+            playwright-report/
+            allure-results/
+          retention-days: 30
+
+  # ============================================================================
+  # Generate Allure Report
+  # ============================================================================
+  allure-report:
+    name: Allure Report
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [e2e-xendit, api-xendit]
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-test-results'
+          path: test-results-combined/
+          merge-multiple: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Allure report
+        run: pnpm report:allure
+
+      - name: Upload Allure report
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report
+          path: allure-report/
+          retention-days: 30
+
+      # GitHub Pages is free - enable in repo Settings > Pages if needed
+      # Source: Deploy from branch 'gh-pages' /root
+      - name: Publish Allure Report to GitHub Pages
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          publish_branch: gh-pages
+          force_orphan: true
+
+  # ============================================================================
+  # Test Summary
+  # ============================================================================
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [e2e-xendit, api-xendit]
+    if: always()
+
+    steps:
+      - name: Download all test results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: '*-test-results'
+          path: test-results-combined/
+          merge-multiple: true
+
+      - name: Parse test results
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test Results
+          path: 'test-results-combined/**/*.xml'
+          reporter: java-junit
+          max-annotations: 50
+          fail-on-error: true
+
+  # ============================================================================
+  # PR Comment with Test Results
+  # ============================================================================
+  pr-comment:
+    name: PR Comment
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [test-summary]
+    if: always() && github.event_name == 'pull_request'
+
+    steps:
+      - name: Comment PR with test summary
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const allureResultsDir = 'allure-results';
+            let comment = '## 🧪 Test Results\n\n';
+
+            if (fs.existsSync(allureResultsDir)) {
+              const files = fs.readdirSync(allureResultsDir);
+              const testResultFiles = files.filter(f => f.endsWith('-result.json'));
+
+              if (testResultFiles.length > 0) {
+                let passed = 0, failed = 0, broken = 0, skipped = 0;
+
+                for (const file of testResultFiles) {
+                  try {
+                    const result = JSON.parse(fs.readFileSync(path.join(allureResultsDir, file), 'utf-8'));
+                    if (result.status === 'passed') passed++;
+                    else if (result.status === 'failed') failed++;
+                    else if (result.status === 'broken') broken++;
+                    else if (result.status === 'skipped') skipped++;
+                  } catch (e) {
+                    // Skip malformed files
+                  }
+                }
+
+                const total = passed + failed + broken + skipped;
+                comment += `| Metric | Count |\n`;
+                comment += `|--------|-------|\n`;
+                comment += `| **Total** | ${total} |\n`;
+                comment += `| **Passed** | ✅ ${passed} |\n`;
+                comment += `| **Failed** | ❌ ${failed} |\n`;
+                comment += `| **Broken** | 🔄 ${broken} |\n`;
+                comment += `| **Skipped** | ⏭️ ${skipped} |\n\n`;
+
+                if (failed > 0 || broken > 0) {
+                  comment += '### ⚠️ Some tests failed!\n\n';
+                  comment += 'Check the workflow artifacts for details.\n';
+                } else {
+                  comment += '### ✅ All tests passed!\n';
+                }
+              }
+            }
+
+            comment += '\n📊 Full report available in workflow artifacts.';
+            comment += '\n\n> **Note:** To enable GitHub Pages for Allure reports, go to repo **Settings > Pages** and select source: `gh-pages` branch.';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
