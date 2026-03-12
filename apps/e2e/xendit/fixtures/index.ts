@@ -5,6 +5,7 @@ import * as Pages from '../pages/index.js';
 type XenditPages = {
   paymentLinkCheckout: Pages.PaymentLinkCheckoutPage;
   dashboard: Pages.DashboardPage;
+  dashboardLogin: Pages.DashboardLoginPage;
 };
 
 // Define the full fixture type for the Xendit app
@@ -16,12 +17,17 @@ type XenditE2EFixtures = {
 const XENDIT_APP_URL = process.env.XENDIT_APP_URL || 'https://dashboard.xendit.co';
 
 /**
- * Main Xendit E2E Test Fixture
- *
- * Use this for all Xendit E2E tests. It pre-configures:
- * 1. Allure metadata (epic, feature)
- * 2. Page object injection via the `pages` fixture
+ * Helper to instantiate all Xendit E2E Page Objects
+ * Abstracted to support reuse across native Playwright and BDD frameworks.
  */
+export function createXenditPages(page: any, allure: any, baseUrl: string): XenditPages {
+  return {
+    paymentLinkCheckout: new Pages.PaymentLinkCheckoutPage(page, allure, baseUrl),
+    dashboard: new Pages.DashboardPage(page, allure, baseUrl),
+    dashboardLogin: new Pages.DashboardLoginPage(page, allure, baseUrl),
+  };
+}
+
 export const test = baseTest.extend<XenditE2EFixtures>({
   // Configure Allure metadata for this app
   allure: async ({ allure }, use) => {
@@ -34,10 +40,7 @@ export const test = baseTest.extend<XenditE2EFixtures>({
 
   // Inject all page objects
   pages: async ({ page, allure }, use) => {
-    const pages = {
-      paymentLinkCheckout: new Pages.PaymentLinkCheckoutPage(page, allure, XENDIT_APP_URL),
-      dashboard: new Pages.DashboardPage(page, allure, XENDIT_APP_URL),
-    };
+    const pages = createXenditPages(page, allure, XENDIT_APP_URL);
     await use(pages);
   },
 });

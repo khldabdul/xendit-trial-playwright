@@ -49,6 +49,7 @@
       "@/types/*": ["src/types/*"],
       "@/config/*": ["src/config/*"],
       "@/hooks/*": ["src/hooks/*"],
+      "@/cucumber/*": ["src/cucumber/*"],
 
       // Xendit apps
       "@xendit/*": ["apps/e2e/xendit/*"],

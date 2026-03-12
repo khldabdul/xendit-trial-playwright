@@ -29,12 +29,6 @@ setup-all: ## Install all browsers (chromium, firefox, webkit)
 	@pnpm exec playwright install --with-deps
 	@echo "$(GREEN)✓ All browsers installed$(NC)"
 
-.PHONY: setup-dev
-setup-dev: ## Install dependencies for development only
-	@echo "$(BLUE)⚙️  Installing dev dependencies...$(NC)"
-	@pnpm install --dev
-	@echo "$(GREEN)✓ Dev dependencies installed$(NC)"
-
 # ============================================================================
 # Dependency Management
 # ============================================================================
@@ -99,90 +93,53 @@ format-check: ## Check code formatting
 # ============================================================================
 
 .PHONY: test
-test: ## Run all tests
-	@echo "$(BLUE)🧪 Running all tests...$(NC)"
+test: ## Run all BDD tests
+	@echo "$(BLUE)🧪 Running all BDD tests...$(NC)"
 	@pnpm test
 
 .PHONY: test-e2e
-test-e2e: ## Run all E2E tests
-	@echo "$(BLUE)🧪 Running E2E tests...$(NC)"
+test-e2e: ## Run E2E BDD tests
+	@echo "$(BLUE)🧪 Running E2E BDD tests...$(NC)"
 	@pnpm test:e2e
 
 .PHONY: test-api
-test-api: ## Run all API tests
-	@echo "$(BLUE)🧪 Running API tests...$(NC)"
+test-api: ## Run API BDD tests
+	@echo "$(BLUE)🧪 Running API BDD tests...$(NC)"
 	@pnpm test:api
 
-# Xendit tests
-.PHONY: test-xendit
-test-xendit: ## Run Xendit E2E tests
-	@echo "$(BLUE)🧪 Running Xendit E2E tests...$(NC)"
-	@pnpm test --project=e2e-xendit
-
-.PHONY: test-xendit-dev
-test-xendit-dev: ## Run Xendit E2E tests in dev environment
-	@echo "$(BLUE)🧪 Running Xendit E2E tests (dev)...$(NC)"
-	@TEST_ENV=dev pnpm test --project=e2e-xendit
-
-.PHONY: test-xendit-staging
-test-xendit-staging: ## Run Xendit E2E tests in staging environment
-	@echo "$(BLUE)🧪 Running Xendit E2E tests (staging)...$(NC)"
-	@TEST_ENV=staging pnpm test --project=e2e-xendit
-
-.PHONY: test-xendit-prod
-test-xendit-prod: ## Run Xendit E2E tests in production environment
-	@echo "$(BLUE)🧪 Running Xendit E2E tests (production)...$(NC)"
-	@TEST_ENV=production pnpm test --project=e2e-xendit
-
-# Xendit API tests
-.PHONY: test-xendit-api
-test-xendit-api: ## Run Xendit API tests
-	@echo "$(BLUE)🧪 Running Xendit API tests...$(NC)"
-	@pnpm test --project=api-xendit
+.PHONY: test-dry-run
+test-dry-run: ## Dry run to check step definitions
+	@echo "$(BLUE)🧪 Dry running BDD tests...$(NC)"
+	@pnpm test:dry-run
 
 # ============================================================================
 # Debugging Commands
 # ============================================================================
-
-.PHONY: test-debug
-test-debug: ## Run tests in debug mode (headed, no timeout)
-	@echo "$(BLUE)🐛 Running tests in debug mode...$(NC)"
-	@PWDEBUG=1 pnpm test --headed --no-timeout
-
-.PHONY: test-debug-xendit
-test-debug-xendit: ## Debug Xendit E2E tests
-	@echo "$(BLUE)🐛 Debugging Xendit E2E tests...$(NC)"
-	@PWDEBUG=1 pnpm test --project=e2e-xendit --headed --no-timeout
 
 .PHONY: test-ui
 test-ui: ## Run tests with Playwright UI
 	@echo "$(BLUE)🖥️  Running tests with UI mode...$(NC)"
 	@pnpm exec playwright test --ui
 
+.PHONY: playwright-codegen
+playwright-codegen: ## Run Playwright codegen
+	@echo "$(BLUE)🎬 Starting Playwright codegen...$(NC)"
+	@pnpm exec playwright codegen
+
 # ============================================================================
 # Reporting Commands
 # ============================================================================
 
-.PHONY: report-allure
-report-allure: ## Generate Allure report
-	@echo "$(BLUE)📊 Generating Allure report...$(NC)"
-	@pnpm report:allure
-	@echo "$(GREEN)✓ Allure report generated: allure-report/index.html$(NC)"
-
-.PHONY: report-allure-open
-report-allure-open: report-allure ## Generate and open Allure report in browser
-	@echo "$(BLUE)📊 Opening Allure report in browser...$(NC)"
-	@pnpm report:open
-
-.PHONY: report-html
-report-html: ## Generate HTML report
-	@echo "$(BLUE)📊 Generating HTML report...$(NC)"
-	@pnpm exec playwright show-report
+.PHONY: report
+report: ## Generate HTML report from cucumber results
+	@echo "$(BLUE)📊 Generating BDD report...$(NC)"
+	@pnpm report
+	@echo "$(GREEN)✓ Report generated: cucumber-report/html-report/index.html$(NC)"
 
 .PHONY: report-clean
 report-clean: ## Clean all reports
 	@echo "$(YELLOW)🧹 Cleaning reports...$(NC)"
-	@rm -rf allure-report playwright-report test-results allure-results
+	@rm -rf cucumber-report
 	@echo "$(GREEN)✓ Reports cleaned$(NC)"
 
 # ============================================================================
@@ -220,11 +177,6 @@ playwright-update: ## Update Playwright browsers
 	@echo "$(BLUE)🌐 Updating Playwright browsers...$(NC)"
 	@pnpm exec playwright install --with-deps --force
 
-.PHONY: playwright-codegen
-playwright-codegen: ## Run Playwright codegen
-	@echo "$(BLUE)🎬 Starting Playwright codegen...$(NC)"
-	@pnpm exec playwright codegen
-
 # ============================================================================
 # Git Hooks
 # ============================================================================
@@ -250,25 +202,25 @@ ci: ## Run CI checks (same as check)
 	@$(MAKE) check
 
 .PHONY: ci-test
-ci-test: ## Run CI tests (with retries and parallel workers)
+ci-test: ## Run CI tests
 	@echo "$(BLUE)🧪 Running CI tests...$(NC)"
-	@CI=true RETRIES=2 WORKERS=4 pnpm test
+	@CI=true pnpm test
 
 # ============================================================================
 # Cleanup Commands
 # ============================================================================
 
 .PHONY: clean
-clean: ## Clean build artifacts and dependencies
+clean: ## Clean build artifacts and reports
 	@echo "$(YELLOW)🧹 Cleaning...$(NC)"
-	@rm -rf node_modules
-	@rm -rf test-results playwright-report allure-report allure-results
+	@rm -rf cucumber-report test-results
 	@rm -rf .cache
 	@echo "$(GREEN)✓ Cleaned$(NC)"
 
 .PHONY: clean-all
 clean-all: clean ## Clean everything including node_modules and locks
 	@echo "$(YELLOW)🧹 Deep cleaning...$(NC)"
+	@rm -rf node_modules
 	@rm -rf pnpm-lock.yaml
 	@echo "$(GREEN)✓ Deep cleaned$(NC)"
 
@@ -283,16 +235,16 @@ help: ## Show this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  $(GREEN)%-20s$(NC) %s\n", $$1, $$2}'
 	@echo ""
 	@echo "$(YELLOW)Examples:$(NC)"
-	@echo "  make test              # Run all tests"
-	@echo "  make test-xendit       # Run Xendit E2E tests"
-	@echo "  make test-debug-xendit # Debug Xendit E2E tests"
-	@echo "  make report-allure     # Generate Allure report"
+	@echo "  make test              # Run all BDD tests"
+	@echo "  make test-e2e          # Run E2E BDD tests"
+	@echo "  make test-api          # Run API BDD tests"
+	@echo "  make report            # Generate BDD HTML report"
 	@echo ""
 	@echo "$(YELLOW)Environment:$(NC)"
 	@echo "  TEST_ENV=dev|staging|production"
 	@echo ""
 	@echo "$(YELLOW)Run specific environment:$(NC)"
-	@echo "  TEST_ENV=staging make test-xendit"
+	@echo "  TEST_ENV=staging make test"
 
 .PHONY: version
 version: ## Show version information

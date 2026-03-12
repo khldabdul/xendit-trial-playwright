@@ -54,3 +54,8 @@ coverage/
 
 # Lock files (optional - uncomment if using pnpm-workspace)
 # pnpm-workspace.yaml
+
+# Cucumber/BDD reports
+cucumber-report/*.json
+cucumber-report/*.html
+cucumber-report/html-report/

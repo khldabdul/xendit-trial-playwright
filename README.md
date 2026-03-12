@@ -1,18 +1,18 @@
 # Playwright TypeScript Framework
 
-A robust, scalable test automation framework built with Playwright, TypeScript, and Allure reporting. Designed for testing web applications and APIs with comprehensive reporting and CI/CD integration.
+A robust, scalable test automation framework built with Playwright, TypeScript, and Cucumber BDD. Designed for testing web applications and APIs with comprehensive reporting and CI/CD integration.
 
 ## Features
 
+- **BDD Testing**: Cucumber integration for business-readable test scenarios
 - **Type-Safe Testing**: Built with TypeScript for maximum reliability and autocomplete
 - **ESLint 9 Flat Config**: Modern ESLint configuration with Playwright and TypeScript rules
 - **Page Object Model**: Clean separation of test logic and page interactions
-- **Allure Reporting**: Beautiful, detailed test reports with screenshots, videos, and HAR files
+- **HTML Reporting**: Beautiful cucumber HTML reports with screenshots and videos
 - **Multi-App Architecture**: Test multiple applications from a single framework
 - **Environment Configuration**: Type-safe configuration for dev, staging, and production
 - **Smart Fixtures**: Pre-loaded fixtures with fully typed client classes
-- **Path Aliases**: Clean imports using custom path aliases (`@sauce-demo-fixtures`)
-- **HAR Recording**: Built-in network traffic recording and analysis
+- **Path Aliases**: Clean imports using custom path aliases (`@xendit-fixtures`)
 - **CI/CD Ready**: Can be integrated with GitHub Actions, GitLab CI, etc.
 - **Developer Friendly**: Makefile commands, ESLint, Prettier
 
@@ -23,60 +23,29 @@ A robust, scalable test automation framework built with Playwright, TypeScript, 
 pnpm install
 
 # Install Playwright browsers
-pnpm exec playwright install --with-deps chromium
+make setup
 
-# Run all working tests
+# Run all BDD tests
 pnpm test
 
-# Generate and open Allure report
-make report-allure-open
+# Generate HTML report
+pnpm report
 ```
-
-## Test Reports
-
-### Allure Report
-
-After running tests, generate and view the Allure report:
-
-```bash
-# Generate report only
-make report-allure
-# or
-pnpm report:allure
-
-# Generate and open report in browser
-make report-allure-open
-# or
-pnpm report:open
-```
-
-The report will be available at `allure-report/index.html`.
-
-### Playwright HTML Report
-
-```bash
-# Generate and open Playwright HTML report
-pnpm exec playwright show-report
-```
-
-### Report Files
-
-| Report            | Location                       | Command                            |
-| ----------------- | ------------------------------ | ---------------------------------- |
-| Allure Report     | `allure-report/index.html`     | `make report-allure-open`          |
-| Playwright Report | `playwright-report/index.html` | `pnpm exec playwright show-report` |
-| Allure Results    | `allure-results/`              | Auto-generated during tests        |
-| Test Results      | `test-results/`                | Auto-generated during tests        |
 
 ## Project Structure
 
 ```
 playwright-typescript-framework/
 ├── apps/                      # Application-specific tests
-│   ├── e2e/                   # End-to-end tests
-│   │   └── xendit/            # ✅ Working - Xendit E2E tests
-│   └── api/                   # API tests
-│       └── xendit/            # ✅ Working - Xendit API tests
+│   ├── e2e/xendit/            # E2E BDD tests
+│   │   ├── features/          # Gherkin feature files
+│   │   ├── step-definitions/  # Step definitions
+│   │   ├── pages/             # Page objects
+│   │   └── fixtures/          # App fixtures
+│   └── api/xendit/            # API BDD tests
+│       ├── features/          # Gherkin feature files
+│       ├── step-definitions/  # Step definitions
+│       └── fixtures/          # App fixtures
 ├── src/                       # Framework source code
 │   ├── config/                # Configuration files
 │   ├── decorators/            # Test decorators
@@ -84,12 +53,10 @@ playwright-typescript-framework/
 │   ├── hooks/                 # Test hooks
 │   ├── pages/                 # Base page object
 │   ├── types/                 # TypeScript type definitions
-│   └── utils/                 # Utility functions
-├── docs/                      # Documentation
-│   ├── SETUP.md               # Setup instructions
-│   ├── TESTING.md             # Testing guidelines
-│   └── DECORATORS.md          # Allure metadata decorators
-├── playwright.config.ts        # Playwright configuration
+│   ├── utils/                 # Utility functions
+│   └── cucumber/              # BDD support (World, Hooks)
+├── cucumber.js                # Cucumber configuration
+├── playwright.config.ts       # Playwright configuration
 ├── tsconfig.json              # TypeScript configuration
 ├── eslint.config.js           # ESLint 9 flat config
 └── package.json               # Dependencies and scripts
@@ -97,43 +64,24 @@ playwright-typescript-framework/
 
 ## Running Tests
 
-### Run All Tests
-
 ```bash
+# Run all BDD tests
 pnpm test
-```
 
-### Run E2E Tests Only
+# Run all BDD tests (headed mode - see browser)
+pnpm test:headed
 
-```bash
-# Xendit
-pnpm test --project=e2e-xendit
-```
+# Run E2E tests only
+pnpm test:e2e
 
-### Run API Tests Only
+# Run E2E tests only (headed mode)
+pnpm test:e2e:headed
 
-```bash
-# All API tests
+# Run API tests only
 pnpm test:api
 
-# Xendit API tests
-pnpm test --project=api-xendit
-```
-
-### Run Specific Test File
-
-```bash
-# E2E test
-pnpm test apps/e2e/xendit/tests/payment_links.spec.ts
-
-# API test
-pnpm test apps/api/xendit/tests/invoices.spec.ts
-```
-
-### List All Available Projects
-
-```bash
-pnpm test --list
+# Dry run (check step definitions)
+pnpm test:dry-run
 ```
 
 ### Run Tests in Specific Environment
@@ -149,17 +97,129 @@ TEST_ENV=staging pnpm test
 TEST_ENV=production pnpm test
 ```
 
-### Debug Tests
+### Run Filtered Tests
 
 ```bash
-# Run in headed mode
-HEADED=true pnpm test
+# Run specific feature file (recommended)
+pnpm test:filter -- apps/e2e/xendit/features/login/login.feature
 
-# Run with Playwright Inspector
-pnpm test --debug
+# Run all features in a directory
+pnpm test:filter -- apps/e2e/xendit/features/payment-links/
 
-# Run specific test with debug
-pnpm test --debug apps/e2e/xendit/tests/payment_links.spec.ts
+# Run API tests only
+pnpm test:api
+
+# Run E2E tests only
+pnpm test:e2e
+
+# Run with retry for failed tests
+pnpm test -- --retry 1
+```
+
+## Test Reports
+
+```bash
+# Generate HTML report from cucumber results
+pnpm report
+
+# Report location
+# cucumber-report/html-report/index.html
+```
+
+### Enhanced Reporting with Screenshots & Videos
+
+The framework automatically captures **screenshots** and **videos** for all test scenarios by default. These are embedded directly in the HTML report for easy debugging and evidence collection.
+
+**Features:**
+- Full-page screenshots captured after each test
+- Video recording of the entire test execution
+- Attachments displayed inline in the HTML report
+
+**Configuration:**
+
+```bash
+# Control attachment behavior (default: true)
+ATTACH_ON_PASS=true   # Attach on passed + failed tests
+ATTACH_ON_PASS=false  # Attach only on failed tests
+```
+
+**Report Contents:**
+- Test execution timeline with step durations
+- Embedded screenshots for visual verification
+- Video recordings for detailed analysis
+- Metadata (browser, platform, execution time)
+
+## Writing Tests
+
+### Feature File Example
+
+```gherkin
+# apps/e2e/xendit/features/login/login.feature
+Feature: User Login
+  As a user
+  I want to log in to the dashboard
+  So that I can access my account
+
+  Scenario: Successful login with valid credentials
+    Given I am on the login page
+    When I login with valid credentials
+    Then I should see the dashboard
+```
+
+### Step Definition Example
+
+```typescript
+// apps/e2e/xendit/step-definitions/login/login.steps.ts
+import { createBdd } from 'playwright-bdd';
+import { expect } from '@playwright/test';
+
+const { Given, When, Then } = createBdd();
+
+Given('I am on the login page', async ({ page }) => {
+  await page.goto('/login');
+});
+
+When('I login with valid credentials', async ({ page }) => {
+  await page.fill('[name="email"]', 'user@example.com');
+  await page.fill('[name="password"]', 'password123');
+  await page.click('button[type="submit"]');
+});
+
+Then('I should see the dashboard', async ({ page }) => {
+  await expect(page.locator('h1')).toContainText('Dashboard');
+});
+```
+
+## Available Commands
+
+### Using pnpm
+
+```bash
+pnpm test              # Run all BDD tests
+pnpm test:headed       # Run all BDD tests (headed mode)
+pnpm test:filter       # Run specific feature file (e.g., pnpm test:filter -- path/to/file.feature)
+pnpm test:e2e          # Run E2E tests only
+pnpm test:e2e:headed   # Run E2E tests only (headed mode)
+pnpm test:api          # Run API tests only
+pnpm test:dry-run      # Dry run to check steps
+pnpm report            # Generate HTML report
+pnpm type-check        # Run TypeScript type check
+pnpm lint              # Run ESLint
+pnpm lint:fix          # Fix ESLint issues automatically
+pnpm format            # Format code with Prettier
+```
+
+### Using Make
+
+```bash
+make help              # Show all available commands
+make setup             # Initial setup
+make test              # Run all tests
+make test-e2e          # Run E2E tests
+make test-api          # Run API tests
+make report            # Generate HTML report
+make check             # Run all checks (type-check, lint)
+make clean             # Clean all generated files
 ```
 
 ## Environment Variables
@@ -170,93 +230,27 @@ Copy `.env.example` to `.env` and configure:
 # Test Environment (default: dev)
 TEST_ENV=dev
 
-# Browser Configuration
-BROWSER=chromium
-HEADLESS=true
+# Parallel workers
+WORKERS=1
 
-# API Keys (optional - for API tests that need them)
-OMDB_API_KEY=your-api-key-here
+# Report attachments (default: true)
+ATTACH_ON_PASS=true
 ```
 
-## Writing Tests
-
-### E2E Test Example
-
-```typescript
-// apps/e2e/xendit/tests/payment_links.spec.ts
-import { xenditSmokeTest as test } from '@xendit-fixtures';
-import { expect } from '@playwright/test';
-
-test('successfully navigates to payment links', async ({ pages }) => {
-  await pages.dashboard.goto();
-  await pages.dashboard.navigateToPaymentLinks();
-  await expect(pages.paymentLinks.headerTitle).toBeVisible();
-});
-```
-
-### API Test Example
-
-```typescript
-// apps/api/xendit/tests/invoices.spec.ts
-import { xenditApiTest as test } from '@xendit-api-fixtures';
-import { expect } from '@playwright/test';
-
-test('creates a new invoice', async ({ clients }) => {
-  const payload = { external_id: `inv-${Date.now()}`, amount: 75000 };
-  const response = await clients.xendit.createInvoice(payload);
-
-  expect(response.status()).toBe(200);
-  const body = await response.json();
-  expect(body.status).toBe('PENDING');
-});
-```
-
-> **Important**: All API client methods return Promises. Always use `await` for client method calls.
-
-## Available Commands
-
-### Using pnpm
-
-```bash
-pnpm test              # Run all tests
-pnpm test:e2e          # Run E2E tests only
-pnpm test:api          # Run API tests only
-pnpm type-check        # Run TypeScript type check
-pnpm lint              # Run ESLint
-pnpm lint:fix          # Fix ESLint issues automatically
-pnpm format            # Format code with Prettier
-pnpm report:allure     # Generate Allure report
-pnpm report:open       # Generate and open Allure report in browser
-```
-
-### Using Make
-
-```bash
-make help              # Show all available commands
-make setup             # Initial setup
-make test              # Run all tests
-make test-xendit       # Run Xendit tests
-make test-api          # Run all API tests
-make report-allure     # Generate Allure report
-make report-allure-open # Generate and open Allure report in browser
-make check             # Run all checks (type-check, lint)
-make clean             # Clean all generated files
-```
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TEST_ENV` | `dev` | Environment (dev, staging, production) |
+| `WORKERS` | `1` | Parallel workers |
+| `HEADED` | `false` | Run tests in headed mode |
+| `ATTACH_ON_PASS` | `true` | Attach screenshots/videos on passed tests |
 
 ## Configuration Files
 
+- `cucumber.js` - Cucumber BDD configuration
 - `eslint.config.js` - ESLint 9 flat config with Playwright and TypeScript rules
-- `src/config/environments.ts` - Environment-specific settings (timeouts, artifacts, etc.)
-- `src/config/test-data.ts` - Shared test data
-- `src/config/apps/*.ts` - Application-specific configuration
+- `src/config/environments.ts` - Environment-specific settings
 - `playwright.config.ts` - Playwright test runner configuration
-- `tsconfig.json` - TypeScript compiler options with path aliases and `skipLibCheck`
-
-## Documentation
-
-- [SETUP.md](docs/SETUP.md) - Detailed setup instructions
-- [TESTING.md](docs/TESTING.md) - Testing guidelines and best practices
-- [DECORATORS.md](docs/DECORATORS.md) - Allure metadata decorators
+- `tsconfig.json` - TypeScript compiler options with path aliases
 
 ## License
 

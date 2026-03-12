@@ -25,11 +25,14 @@ export class PaymentLinkCheckoutPage extends BasePage {
    */
   async expandCreditCardSection(): Promise<void> {
     await this.allure.step('Expand Credit / Debit Card payment section', async () => {
-      // The accordion button carries a data-testid of `payment-channel-list-credit-card`
-      const cardAccordion = this.page.getByTestId('payment-channel-list-credit-card');
+      // The accordion button carries a data-testid, but it might change, so we use fallbacks
+      const cardAccordion = this.page.getByTestId('payment-channel-list-credit-card')
+        .or(this.page.getByRole('button', { name: /credit.*card/i }))
+        .or(this.page.getByText(/credit\/debit card/i))
+        .first();
       await cardAccordion.waitFor({ state: 'visible', timeout: 15_000 });
 
-      // Only click if the section is not yet expanded
+      // Click to expand (we try to click even if aria-expanded isn't strictly 'false' to be safe)
       const isExpanded = await cardAccordion.getAttribute('aria-expanded');
       if (isExpanded !== 'true') {
         await cardAccordion.click();
@@ -96,7 +99,7 @@ export class PaymentLinkCheckoutPage extends BasePage {
   async fillCreditCardDetails(
     cardOrNumber: CardDetails | string,
     expiry?: string,
-    cvn?: string,
+    cvn?: string
   ): Promise<void> {
     // Normalize overload shapes
     const card: CardDetails =
@@ -195,7 +198,9 @@ export class PaymentLinkCheckoutPage extends BasePage {
    */
   async verifyFailure(): Promise<void> {
     await this.allure.step('Verify payment failure message', async () => {
-      const failureHeading = this.page.getByRole('heading', { name: /payment failed|declined|unsuccessful/i });
+      const failureHeading = this.page.getByRole('heading', {
+        name: /payment failed|declined|unsuccessful/i,
+      });
       const failureText = this.page
         .getByText(/payment was declined/i)
         .or(this.page.getByText(/transaction failed/i))

@@ -8,6 +8,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import pluginPlaywright from 'eslint-plugin-playwright';
+import globals from 'globals';
 
 export default [
   // Ignore patterns (previously in ignorePatterns)
@@ -24,6 +25,16 @@ export default [
       '*.config.ts',
       '*.d.ts',
     ],
+  },
+
+  // Global settings
+  {
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
   },
 
   // Base JavaScript rules (previously "eslint:recommended")
@@ -77,6 +88,16 @@ export default [
     rules: {
       // Allow console in test files for debugging
       'no-console': 'off',
+    },
+  },
+
+  // Special rules for Cucumber step definitions
+  {
+    files: ['**/step-definitions/**/*.ts'],
+
+    rules: {
+      // Cucumber uses assertions outside of Playwright's test() block
+      'playwright/no-standalone-expect': 'off',
     },
   },
 

@@ -54,11 +54,9 @@ export class XenditApiClient {
     // Attach request body
     if (this.allure) {
       try {
-        this.allure.attachment(
-          `${label} – Request`,
-          JSON.stringify(requestBody ?? null, null, 2),
-          { contentType: 'application/json' }
-        );
+        this.allure.attachment(`${label} – Request`, JSON.stringify(requestBody ?? null, null, 2), {
+          contentType: 'application/json',
+        });
       } catch {
         // Non-blocking; never fail a test because of a logging error
       }
@@ -114,6 +112,14 @@ export class XenditApiClient {
   }
 
   /**
+   * Creates an Invoice (alias for createPaymentLink, used by webhook step definitions)
+   * API: /v2/invoices
+   */
+  async createInvoice(payload: CreateInvoiceRequest): Promise<APIResponse> {
+    return this.createPaymentLink(payload);
+  }
+
+  /**
    * Explores the Pay and Save behavior using Tokenization
    * API: /payment_requests (flow = PAY_AND_SAVE)
    */
@@ -124,6 +130,13 @@ export class XenditApiClient {
         data: payload,
       })
     );
+  }
+
+  /**
+   * Alias for createPayAndSaveSession, used by BDD steps
+   */
+  async createPaymentRequest(payload: CreatePayAndSaveRequest): Promise<APIResponse> {
+    return this.createPayAndSaveSession(payload);
   }
 
   /**

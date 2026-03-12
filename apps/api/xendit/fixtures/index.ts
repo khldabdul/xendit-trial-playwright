@@ -16,6 +16,22 @@ type XenditApiAppFixtures = ApiFixtures & {
  * 1. Allure metadata
  * 2. API client injection via the `clients` fixture
  */
+/**
+ * Helper to instantiate all Xendit API Clients
+ * Abstracted to support reuse across native Playwright and BDD frameworks.
+ */
+export async function createXenditApiClients(apiRequest: any, allure: any) {
+  const secretKey = process.env.XENDIT_SECRET_KEY || 'MISSING';
+  const apiUrl = process.env.XENDIT_API_URL || 'https://api.xendit.co';
+
+  // Lazy load to avoid module resolution errors in some runners
+  const { XenditApiClient } = await import('../clients/index.js');
+
+  return {
+    xendit: new XenditApiClient(apiRequest, secretKey, apiUrl, allure),
+  };
+}
+
 export const xenditApiTest = _baseApiTest.extend<XenditApiAppFixtures>({
   // Configure Allure metadata for this app
   allure: async ({ allure }, use) => {
@@ -28,16 +44,7 @@ export const xenditApiTest = _baseApiTest.extend<XenditApiAppFixtures>({
 
   // Inject all API clients. Note that apiRequest comes from _baseApiTest context.
   clients: async ({ apiRequest, allure }, use) => {
-    const secretKey = process.env.XENDIT_SECRET_KEY || 'MISSING';
-    const apiUrl = process.env.XENDIT_API_URL || 'https://api.xendit.co';
-    
-    // Lazy load the Xendit apiClient
-    const { XenditApiClient } = await import('../clients/index.js');
-    
-    const clients = {
-      xendit: new XenditApiClient(apiRequest, secretKey, apiUrl, allure),
-    };
-    
+    const clients = await createXenditApiClients(apiRequest, allure);
     await use(clients);
   },
 });

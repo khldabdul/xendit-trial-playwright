@@ -30,7 +30,7 @@ export async function waitForXenditWebhook(
     const response = await request.get(`https://webhook.site/token/${webhookSiteToken}/requests`, {
       ignoreHTTPSErrors: true,
     });
-    
+
     if (response.ok()) {
       const data = await response.json();
 
@@ -41,7 +41,8 @@ export async function waitForXenditWebhook(
           try {
             const payload = JSON.parse(req.content);
             return payload.external_id === externalId && payload.status === status;
-          } catch (error) {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          } catch (_error) {
             // Unparseable content, probably not our webhook
             return false;
           }
@@ -72,5 +73,7 @@ export async function waitForXenditWebhook(
     await new Promise((resolve) => setTimeout(resolve, retryInterval));
   }
 
-  throw new Error(`Webhook for external_id '${externalId}' with status '${status}' never received on webhook.site`);
+  throw new Error(
+    `Webhook for external_id '${externalId}' with status '${status}' never received on webhook.site`
+  );
 }
