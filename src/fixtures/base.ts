@@ -7,7 +7,6 @@
  */
 
 import { test as base } from '@playwright/test';
-import * as allureApi from 'allure-js-commons';
 import type { EnvironmentConfig, MinimalAllureReporter } from '@/types/config.types';
 import { createStepHelper, type StepHelper } from '@/utils/test-steps';
 
@@ -16,68 +15,24 @@ export type { MinimalAllureReporter };
 
 /**
  * Allure wrapper that matches MinimalAllureReporter interface
- * Uses allure-js-commons directly (recommended approach for allure-playwright v3+)
- *
- * Migration note: The 'allure' export from 'allure-playwright' is deprecated.
- * Import individual functions from 'allure-js-commons' instead.
+ * Mock implementation to avoid dependency on allure-js-commons
  */
 class AllureWrapper implements MinimalAllureReporter {
   async step<T>(name: string, body: () => Promise<T>): Promise<T> {
-    // Execute the body and store result
-    let result: T;
-    await allureApi.step(name, async () => {
-      result = await body();
-    });
-    return result as T;
+    return await body();
   }
 
-  attachment(name: string, content: Buffer | string, options: { contentType: string }): void {
-    allureApi.attachment(name, content, options.contentType);
-  }
-
-  epic(epic: string): void {
-    allureApi.epic(epic);
-  }
-
-  feature(feature: string): void {
-    allureApi.feature(feature);
-  }
-
-  story(story: string): void {
-    allureApi.story(story);
-  }
-
-  label(name: string, value: string): void {
-    allureApi.label(name, value);
-  }
-
-  severity(severity: string): void {
-    allureApi.severity(severity);
-  }
-
-  tag(tag: string): void {
-    allureApi.tag(tag);
-  }
-
-  description(description: string): void {
-    allureApi.description(description);
-  }
-
-  descriptionHtml(description: string): void {
-    allureApi.descriptionHtml(description);
-  }
-
-  link(url: string, options?: { name?: string | undefined; type?: string | undefined }): void {
-    if (options?.type && options?.name) {
-      allureApi.link(options.type, url, options.name);
-    } else {
-      allureApi.link('link', url);
-    }
-  }
-
-  parameter(name: string, value: string): void {
-    allureApi.parameter(name, value);
-  }
+  attachment(): void {}
+  epic(): void {}
+  feature(): void {}
+  story(): void {}
+  label(): void {}
+  severity(): void {}
+  tag(): void {}
+  description(): void {}
+  descriptionHtml(): void {}
+  link(): void {}
+  parameter(): void {}
 }
 
 // Create a singleton instance
