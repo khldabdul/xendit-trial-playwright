@@ -7,7 +7,9 @@ export class DashboardPage extends BasePage {
   constructor(page: Page, allure: any, baseUrl: string) {
     super(page, allure, baseUrl);
 
-    this.createPaymentLinkButton = this.page.getByText('Set up a payment link', { exact: false }).first();
+    this.createPaymentLinkButton = this.page
+      .getByText('Set up a payment link', { exact: false })
+      .first();
   }
 
   async navigateToPaymentLinks() {

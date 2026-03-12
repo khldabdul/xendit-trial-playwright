@@ -25,7 +25,8 @@ Before(async function (this: CustomWorld, { pickle }: ITestCaseHookParameter) {
 After(async function (this: CustomWorld, { result, pickle }: ITestCaseHookParameter) {
   // Check if attachments should be captured on passed tests (default: true)
   const attachOnPass = process.env.ATTACH_ON_PASS !== 'false'; // Default: true
-  const shouldAttach = result?.status === Status.FAILED || (attachOnPass && result?.status === Status.PASSED);
+  const shouldAttach =
+    result?.status === Status.FAILED || (attachOnPass && result?.status === Status.PASSED);
 
   // Skip video/screenshot if this is an API test
   const isApiTest = pickle.uri.includes('/api/');
@@ -34,7 +35,8 @@ After(async function (this: CustomWorld, { result, pickle }: ITestCaseHookParame
   if (shouldAttach && !isApiTest) {
     try {
       // Attach screenshot
-      const screenshotLabel = result?.status === Status.FAILED ? 'Failure Screenshot' : 'Test Screenshot';
+      const screenshotLabel =
+        result?.status === Status.FAILED ? 'Failure Screenshot' : 'Test Screenshot';
       await this.attachScreenshot(screenshotLabel);
 
       // Close context first to finalize video, then attach video

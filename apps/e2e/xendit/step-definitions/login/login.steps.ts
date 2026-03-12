@@ -61,8 +61,11 @@ When('I enter an invalid 2FA code', async function (this: CustomWorld) {
   }
 });
 
-Then('I should see an error message indicating invalid verification code', async function (this: CustomWorld) {
-  const pages = getPages(this);
-  // Wait for error message to appear
-  await expect(pages.dashboardLogin.errorMessage).toBeVisible({ timeout: 10000 });
-});
+Then(
+  'I should see an error message indicating invalid verification code',
+  async function (this: CustomWorld) {
+    const pages = getPages(this);
+    // Wait for error message to appear
+    await expect(pages.dashboardLogin.errorMessage).toBeVisible({ timeout: 10000 });
+  }
+);

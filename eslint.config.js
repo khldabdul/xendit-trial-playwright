@@ -19,6 +19,8 @@ export default [
       'allure-results/**',
       'playwright-report/**',
       'allure-report/**',
+      'cucumber-report/**',
+      '.features-gen/**',
       'dist/**',
       'build/**',
       '*.config.js',

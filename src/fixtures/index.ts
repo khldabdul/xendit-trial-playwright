@@ -8,4 +8,3 @@
 
 export * from './base';
 export { envConfig, env, runId, test, expect } from './environment';
-export { testData, findTestDataFiles } from './test-data.fixture';

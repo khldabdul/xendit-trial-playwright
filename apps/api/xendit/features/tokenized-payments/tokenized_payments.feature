@@ -28,7 +28,7 @@ Feature: Tokenized Payments
   @TC11_API @api @negative
   Scenario: Verify token creation failure with Invalid Card Number
     When I attempt to create a tokenized charge with an invalid card number
-    Then the API should return a 400 error indicating invalid card number
+    Then the API should return a 400 error for invalid card number
 
   @TC12_API @api @negative
   Scenario: Verify token creation failure with Expired Card

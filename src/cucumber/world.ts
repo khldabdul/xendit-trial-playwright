@@ -92,15 +92,15 @@ export class CustomWorld extends World {
     return video ? video.path() : null;
   }
 
-  getData<T = unknown>(key: string): T | undefined {
-    return this.testData[key] as T | undefined;
+  getData<T = any>(key: string): T {
+    return this.testData[key] as T;
   }
 
   setData(key: string, value: unknown): void {
     this.testData[key] = value;
   }
 
-  async attachScreenshot(label = 'Screenshot'): Promise<void> {
+  async attachScreenshot(_label = 'Screenshot'): Promise<void> {
     if (this._page) {
       const screenshot = await this._page.screenshot({ fullPage: true });
       this.attach(screenshot, 'image/png');
@@ -128,7 +128,7 @@ export class CustomWorld extends World {
     if (videoPath) {
       try {
         // Small delay to ensure video file is fully written
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
 
         // Check if video file exists
         if (existsSync(videoPath)) {

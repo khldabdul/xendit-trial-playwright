@@ -15,7 +15,7 @@ export class TotpHelper {
   public async generateCode(): Promise<string> {
     if (!this.secret) {
       throw new Error(
-        'TOTP secret is not configured. Please set XENDIT_TOTP_SECRET in your .env file.',
+        'TOTP secret is not configured. Please set XENDIT_TOTP_SECRET in your .env file.'
       );
     }
     const { otp } = await TOTP.generate(this.secret);

@@ -69,6 +69,8 @@
     "playwright-report",
     "allure-results",
     "allure-report",
+    "cucumber-report",
+    ".features-gen",
     "dist",
     "build"
   ]

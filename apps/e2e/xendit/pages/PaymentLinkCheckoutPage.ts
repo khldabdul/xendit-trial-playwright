@@ -26,7 +26,8 @@ export class PaymentLinkCheckoutPage extends BasePage {
   async expandCreditCardSection(): Promise<void> {
     await this.allure.step('Expand Credit / Debit Card payment section', async () => {
       // The accordion button carries a data-testid, but it might change, so we use fallbacks
-      const cardAccordion = this.page.getByTestId('payment-channel-list-credit-card')
+      const cardAccordion = this.page
+        .getByTestId('payment-channel-list-credit-card')
         .or(this.page.getByRole('button', { name: /credit.*card/i }))
         .or(this.page.getByText(/credit\/debit card/i))
         .first();

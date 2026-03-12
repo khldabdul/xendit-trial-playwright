@@ -131,6 +131,7 @@ pnpm report
 The framework automatically captures **screenshots** and **videos** for all test scenarios by default. These are embedded directly in the HTML report for easy debugging and evidence collection.
 
 **Features:**
+
 - Full-page screenshots captured after each test
 - Video recording of the entire test execution
 - Attachments displayed inline in the HTML report
@@ -144,6 +145,7 @@ ATTACH_ON_PASS=false  # Attach only on failed tests
 ```
 
 **Report Contents:**
+
 - Test execution timeline with step durations
 - Embedded screenshots for visual verification
 - Video recordings for detailed analysis
@@ -237,12 +239,12 @@ WORKERS=1
 ATTACH_ON_PASS=true
 ```
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `TEST_ENV` | `dev` | Environment (dev, staging, production) |
-| `WORKERS` | `1` | Parallel workers |
-| `HEADED` | `false` | Run tests in headed mode |
-| `ATTACH_ON_PASS` | `true` | Attach screenshots/videos on passed tests |
+| Variable         | Default | Description                               |
+| ---------------- | ------- | ----------------------------------------- |
+| `TEST_ENV`       | `dev`   | Environment (dev, staging, production)    |
+| `WORKERS`        | `1`     | Parallel workers                          |
+| `HEADED`         | `false` | Run tests in headed mode                  |
+| `ATTACH_ON_PASS` | `true`  | Attach screenshots/videos on passed tests |
 
 ## Configuration Files
 

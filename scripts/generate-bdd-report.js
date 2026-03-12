@@ -1,5 +1,5 @@
 import report from 'multiple-cucumber-html-reporter';
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { release, hostname } from 'os';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -12,6 +12,53 @@ const htmlDir = 'cucumber-report/html-report';
 if (!existsSync(`${jsonDir}/cucumber-report.json`)) {
   console.log('No cucumber-report.json found. Skipping HTML report generation.');
   process.exit(0);
+}
+
+/**
+ * Strip ANSI escape codes from strings in the cucumber report.
+ * These codes appear as [2m, [31m, etc. in HTML reports and make them unreadable.
+ */
+function stripAnsiCodes(str) {
+  if (typeof str !== 'string') return str;
+  // Match ANSI escape sequences: ESC [ followed by parameters and a letter
+  return (
+    str
+      // eslint-disable-next-line no-control-regex
+      .replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '')
+      .replace(/\[(?:[0-9]{1,3}(?:;[0-9]{1,3})*)?m/g, '')
+  );
+}
+
+/**
+ * Recursively clean all strings in an object by stripping ANSI codes.
+ */
+function cleanObject(obj) {
+  if (typeof obj === 'string') {
+    return stripAnsiCodes(obj);
+  }
+  if (Array.isArray(obj)) {
+    return obj.map(cleanObject);
+  }
+  if (obj && typeof obj === 'object') {
+    const cleaned = {};
+    for (const key of Object.keys(obj)) {
+      cleaned[key] = cleanObject(obj[key]);
+    }
+    return cleaned;
+  }
+  return obj;
+}
+
+// Read and clean the cucumber report JSON
+const reportPath = `${jsonDir}/cucumber-report.json`;
+try {
+  const rawReport = readFileSync(reportPath, 'utf-8');
+  const reportData = JSON.parse(rawReport);
+  const cleanedReport = cleanObject(reportData);
+  writeFileSync(reportPath, JSON.stringify(cleanedReport, null, 2));
+  console.log('Cleaned ANSI codes from cucumber report.');
+} catch (err) {
+  console.warn('Warning: Could not clean cucumber report:', err.message);
 }
 
 // Read package.json for dynamic project info
@@ -32,10 +79,14 @@ const getPlaywrightVersion = () => {
 // Detect platform name
 const getPlatformName = () => {
   switch (process.platform) {
-    case 'win32': return 'windows';
-    case 'darwin': return 'osx';
-    case 'linux': return 'linux';
-    default: return process.platform;
+    case 'win32':
+      return 'windows';
+    case 'darwin':
+      return 'osx';
+    case 'linux':
+      return 'linux';
+    default:
+      return process.platform;
   }
 };
 
@@ -47,7 +98,7 @@ const getBrowserInfo = () => {
     chromium: 'chrome',
     chrome: 'chrome',
     firefox: 'firefox',
-   webkit: 'webkit',
+    webkit: 'webkit',
     safari: 'webkit',
   };
   return {
@@ -76,7 +127,10 @@ const buildCustomData = () => {
     { label: 'Description', value: packageJson.description },
     { label: 'Environment', value: getTestEnv().toUpperCase() },
     { label: 'Execution Mode', value: getExecutionMode() },
-    { label: 'Framework', value: `Cucumber ${getCucumberVersion()} + Playwright ${getPlaywrightVersion()}` },
+    {
+      label: 'Framework',
+      value: `Cucumber ${getCucumberVersion()} + Playwright ${getPlaywrightVersion()}`,
+    },
     { label: 'Node.js', value: process.version },
     { label: 'Execution Time', value: new Date().toLocaleString() },
   ];

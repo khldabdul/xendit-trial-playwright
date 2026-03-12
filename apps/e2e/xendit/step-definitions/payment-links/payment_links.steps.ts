@@ -20,15 +20,11 @@ When(
     });
     const data = await response.json();
     if (!response.ok()) {
-      throw new Error(
-        `createPaymentLink failed [${response.status()}]: ${JSON.stringify(data)}`
-      );
+      throw new Error(`createPaymentLink failed [${response.status()}]: ${JSON.stringify(data)}`);
     }
     const checkoutUrl = data.invoice_url;
     if (!checkoutUrl) {
-      throw new Error(
-        `invoice_url missing in response. Full body: ${JSON.stringify(data)}`
-      );
+      throw new Error(`invoice_url missing in response. Full body: ${JSON.stringify(data)}`);
     }
     this.setData('checkoutUrl', checkoutUrl);
   }
@@ -107,15 +103,11 @@ When(
     });
     const data = await response.json();
     if (!response.ok()) {
-      throw new Error(
-        `createPaymentLink failed [${response.status()}]: ${JSON.stringify(data)}`
-      );
+      throw new Error(`createPaymentLink failed [${response.status()}]: ${JSON.stringify(data)}`);
     }
     const checkoutUrl = data.invoice_url;
     if (!checkoutUrl) {
-      throw new Error(
-        `invoice_url missing in response. Full body: ${JSON.stringify(data)}`
-      );
+      throw new Error(`invoice_url missing in response. Full body: ${JSON.stringify(data)}`);
     }
     this.setData('checkoutUrl', checkoutUrl);
   }
@@ -140,9 +132,7 @@ When('I create a Payment Link via API without an amount field', async function (
   }
   const checkoutUrl = data.invoice_url;
   if (!checkoutUrl) {
-    throw new Error(
-      `invoice_url missing in response. Full body: ${JSON.stringify(data)}`
-    );
+    throw new Error(`invoice_url missing in response. Full body: ${JSON.stringify(data)}`);
   }
   this.setData('checkoutUrl', checkoutUrl);
 });
@@ -242,9 +232,7 @@ When(
     }
     const checkoutUrl = data.invoice_url;
     if (!checkoutUrl) {
-      throw new Error(
-        `invoice_url missing in response. Full body: ${JSON.stringify(data)}`
-      );
+      throw new Error(`invoice_url missing in response. Full body: ${JSON.stringify(data)}`);
     }
     this.setData('checkoutUrl', checkoutUrl);
   }

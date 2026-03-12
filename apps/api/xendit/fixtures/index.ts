@@ -1,11 +1,13 @@
 import { _baseApiTest } from '@/fixtures/api-base.js';
 import { ApiFixtures } from '@/types/config.types.js';
 import * as Clients from '../clients/index.js';
+import { XenditApiV3Client } from '@/api/XenditApiV3Client.js';
 
 // Define the clients fixture structure
 type XenditApiAppFixtures = ApiFixtures & {
   clients: {
     xendit: Clients.XenditApiClient;
+    xenditV3: XenditApiV3Client;
   };
 };
 
@@ -26,9 +28,11 @@ export async function createXenditApiClients(apiRequest: any, allure: any) {
 
   // Lazy load to avoid module resolution errors in some runners
   const { XenditApiClient } = await import('../clients/index.js');
+  const { XenditApiV3Client } = await import('@/api/XenditApiV3Client.js');
 
   return {
     xendit: new XenditApiClient(apiRequest, secretKey, apiUrl, allure),
+    xenditV3: new XenditApiV3Client(apiRequest, secretKey, apiUrl, allure),
   };
 }
 

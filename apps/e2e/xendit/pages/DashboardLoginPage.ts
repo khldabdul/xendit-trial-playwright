@@ -17,17 +17,23 @@ export class DashboardLoginPage extends BasePage {
 
     // Initial locators for Xendit Merchant Dashboard login based on typical Auth0/B2B portal setups.
     // NOTE: These may need adjustment depending on actual DOM structure.
-    this.emailInput = this.page.getByRole('textbox', { name: /email/i }).or(this.page.locator('input[type="email"]'));
-    this.passwordInput = this.page.getByRole('textbox', { name: /password/i }).or(this.page.locator('input[type="password"]'));
+    this.emailInput = this.page
+      .getByRole('textbox', { name: /email/i })
+      .or(this.page.locator('input[type="email"]'));
+    this.passwordInput = this.page
+      .getByRole('textbox', { name: /password/i })
+      .or(this.page.locator('input[type="password"]'));
     this.loginButton = this.getByRole('button', { name: /log in/i, disabled: false });
 
     // 2FA Locators
-    this.totpInput = this.page.locator('input[name="totp"], input[autocomplete="one-time-code"], input[type="text"].auth-code-input');
+    this.totpInput = this.page.locator(
+      'input[name="totp"], input[autocomplete="one-time-code"], input[type="text"].auth-code-input'
+    );
     this.submitTotpButton = this.getByRole('button', { name: /verify|submit|continue|confirm/i });
 
     // Error message locator
     this.errorMessage = this.page.locator('form div').filter({
-      hasText: /invalid|incorrect|error|failed|wrong|does not match/i
+      hasText: /invalid|incorrect|error|failed|wrong|does not match/i,
     });
 
     this.totpHelper = new TotpHelper();
@@ -43,7 +49,7 @@ export class DashboardLoginPage extends BasePage {
   async enterCredentials(email?: string, password?: string) {
     const defaultEmail = process.env.XENDIT_USERNAME || '';
     const defaultPassword = process.env.XENDIT_PASSWORD || '';
-    
+
     await this.allure.step('Enter login credentials', async () => {
       await this.fill(this.emailInput, email || defaultEmail);
       await this.fill(this.passwordInput, password || defaultPassword);
