@@ -28,8 +28,7 @@ export class PaymentLinkCheckoutPage extends BasePage {
       // The accordion button carries a data-testid, but it might change, so we use fallbacks
       const cardAccordion = this.page
         .getByTestId('payment-channel-list-credit-card')
-        .or(this.page.getByRole('button', { name: /credit.*card/i }))
-        .or(this.page.getByText(/credit\/debit card/i))
+        .or(this.page.getByText(/credit\s*\/\s*debit card/i))
         .first();
       await cardAccordion.waitFor({ state: 'visible', timeout: 15_000 });
 
@@ -38,11 +37,6 @@ export class PaymentLinkCheckoutPage extends BasePage {
       if (isExpanded !== 'true') {
         await cardAccordion.click();
       }
-
-      // Wait for the card form region to appear
-      await this.page
-        .getByRole('region', { name: 'Credit / Debit Card' })
-        .waitFor({ state: 'visible', timeout: 10_000 });
     });
   }
 

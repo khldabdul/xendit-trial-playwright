@@ -17,6 +17,11 @@ BeforeAll(async function () {
   console.log('🎭 Starting BDD test run...');
 });
 
+Before({ tags: '@sandbox-restricted or @skip' }, async function (this: CustomWorld, { pickle }: ITestCaseHookParameter) {
+  console.log(`  ⊘ Skipping test: ${pickle.name}`);
+  return 'skipped';
+});
+
 Before(async function (this: CustomWorld, { pickle }: ITestCaseHookParameter) {
   await this.init();
   console.log(`  → Running: ${pickle.name}`);

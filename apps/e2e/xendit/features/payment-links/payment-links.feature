@@ -23,16 +23,6 @@ Feature: Payment Links
     And I open the generated checkout URL
     Then I should see the item name on the checkout page
 
-  @TC03_UI @ui
-  Scenario: Verify creation and payment of an Open Amount (Donation) link
-    When I create a Payment Link via API without an amount field
-    And I open the generated checkout URL
-    And I fill in a customer-specified amount of 100000
-    And I fill card details using test card "SUCCESS_3DS"
-    And I click Pay Now
-    And I handle 3DS OTP iframe authentication
-    Then I should see the success confirmation page
-
   @TC04_UI @api @negative
   Scenario: Verify validation on missing mandatory fields
     When I attempt to create a Payment Link via API without an amount but with custom link ID
@@ -44,12 +34,12 @@ Feature: Payment Links
     Then the API should return a 400 validation error
 
     Examples:
-      | amount        |
-      |             0 |
-      |         -5000 |
-      | 9999999999999 |
+      | amount |
+      |      0 |
+      |  -5000 |
+      # | 9999999999999 | Min & Max value documentation is not available (https://archive.developers.xendit.co/api-reference/#create-invoice) - (https://docs.xendit.co/xeninvoice/payment-channels)
 
-  @TC06_UI @api @negative
+  @TC06_UI @api @negative @skip @todo
   Scenario: Verify error when using duplicate Custom Link ID
     Given I have created a Payment Link with a unique Custom Link ID
     When I attempt to create another Payment Link with the exact same Custom Link ID

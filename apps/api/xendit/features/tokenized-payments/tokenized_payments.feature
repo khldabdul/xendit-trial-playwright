@@ -37,7 +37,7 @@ Feature: Tokenized Payments
 
   @TC13_API @api @negative
   Scenario Outline: Verify Authentication Failure
-    When I send a tokenized payment request "<auth_state>"
+    When I send a v2 tokenized payment request "<auth_state>"
     Then the API should return a 401 Unauthorized status
 
     Examples:

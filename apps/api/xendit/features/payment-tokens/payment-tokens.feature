@@ -7,7 +7,7 @@ Feature: Payment Tokens
   Background:
     Given I have a Xendit v3 API client
 
-  @TC25_API @v3 @payment-tokens @smoke @failing @skip
+  @TC25_API @v3 @payment-tokens @smoke @failing
   Scenario: Save payment information only - success
     # FAILING: 403 INVALID_MERCHANT_SETTINGS — PAN transactions blocked on this sandbox account.
     # See docs/plans/repro-invalid-merchant-settings.md to trace this issue.
@@ -16,7 +16,7 @@ Feature: Payment Tokens
     And the response should contain a payment token ID
     And the payment token status should be REQUIRES_ACTION
 
-  @TC25b_API @v3 @payment-tokens @negative @sandbox-restricted
+  @TC25b_API @v3 @payment-tokens @negative
   Scenario: Save payment information - account blocks PAN tokenization
     # This scenario documents a known sandbox account restriction.
     # Error: INVALID_MERCHANT_SETTINGS
@@ -26,7 +26,7 @@ Feature: Payment Tokens
     When I create a v3 payment token for saving payment information
     Then the API should return a 403 error indicating PAN transactions are blocked
 
-  @TC26_API @v3 @payment-tokens @smoke @failing @skip
+  @TC26_API @v3 @payment-tokens @smoke @failing
   Scenario: Pay and save payment method - success
     # FAILING: 403 INVALID_MERCHANT_SETTINGS — CARDS channel not enabled on this sandbox account.
     When I create a v3 payment request with save payment method enabled
@@ -42,7 +42,7 @@ Feature: Payment Tokens
     And the response should contain a payment request ID
     And the payment request status should be PENDING or REQUIRES_ACTION
 
-  @TC27_API @v3 @payment-tokens @smoke @failing @skip
+  @TC27_API @v3 @payment-tokens @smoke @failing
   Scenario: Pay with existing token - success
     # FAILING: prerequisite (Given I have a saved v3 payment token) returns 403.
     Given I have a saved v3 payment token
@@ -54,7 +54,7 @@ Feature: Payment Tokens
     Then the response status should be 200
     And the payment request status should be SUCCEEDED
 
-  @TC28_API @v3 @payment-tokens @failing @skip
+  @TC28_API @v3 @payment-tokens @failing
   Scenario: Get payment token status - polling
     # FAILING: prerequisite (Given I have a v3 payment token ID) returns 403.
     Given I have a v3 payment token ID

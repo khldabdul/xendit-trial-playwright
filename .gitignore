@@ -3,13 +3,8 @@ node_modules/
 .pnpm-store/
 .pnpm-debug.log*
 
-# Test results
+# Test artifacts
 test-results/
-playwright-report/
-allure-results/
-allure-report/
-allure-report/history/
-junit-results.xml
 
 # Build outputs
 dist/
@@ -59,3 +54,4 @@ coverage/
 cucumber-report/*.json
 cucumber-report/*.html
 cucumber-report/html-report/
+cucumber-report/videos/

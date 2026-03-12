@@ -206,19 +206,40 @@ Then(
 );
 
 // ─── TC13: Auth failure outline (v2 tokenized payments) ─────────────────────
-//
-// IMPORTANT: The step text 'I send a tokenized payment request {string}' is
-// ALSO used by TC24 (payment-requests.feature) which calls the v3 endpoint.
-// Because both feature files are loaded simultaneously by the 'api' cucumber
-// profile, having the same step text in two files creates an Ambiguous Step
-// error. The cleanest fix is to rename TC13's step in tokenized_payments.feature
-// to something distinct, e.g.:
-//   When I send a v2 tokenized payment request "<auth_state>"
-//
-// For now this step is omitted here. TC13 in tokenized_payments.feature will
-// be served by the v3 step in payment_requests.steps.ts (which tests a 401
-// using the v3 endpoint — functionally equivalent for auth testing).
-// This is tracked as a documentation refinement item.
+
+When('I send a v2 tokenized payment request {string}', async function (this: CustomWorld, authState: string) {
+  const api: any = this.getData('xenditApi');
+  const payload: any = {
+    amount: 50000,
+    currency: 'IDR',
+    payment_method: {
+      type: 'CARD',
+      reusability: 'MULTIPLE_USE',
+      card: {
+        channel_properties: {
+          success_return_url: 'https://webhook.site/success',
+          failure_return_url: 'https://webhook.site/failure',
+        },
+        card_information: {
+          card_number: '4000000000000002',
+          expiry_month: '12',
+          expiry_year: '2028',
+          cvn: '123',
+        },
+      },
+    },
+    customer: { name: 'BDD', email: 'bdd@example.com' },
+    flow: 'PAY_AND_SAVE',
+  };
+  
+  let response;
+  if (authState.includes('without')) {
+    response = await api.createPayAndSaveSessionNoAuth(payload);
+  } else {
+    response = await api.createPayAndSaveSessionInvalidAuth(payload);
+  }
+  this.setData('response', response);
+});
 
 // ─── TC14: Insufficient funds ─────────────────────────────────────────────────
 

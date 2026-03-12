@@ -66,7 +66,7 @@ export function expiredCardDetails(): CardDetailsV3 {
  */
 export function successCardChannelProperties() {
   return {
-    mid_label: 'CTV_TEST',
+    mid_label: 'mid_label_acquirer_1',
     card_details: successCardDetails(),
     skip_three_ds: false,
     success_return_url: 'https://webhook.site/success',

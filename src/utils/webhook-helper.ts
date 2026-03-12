@@ -26,10 +26,18 @@ export async function waitForXenditWebhook(
   const retryInterval = 2000;
 
   for (let i = 0; i < maxRetries; i++) {
-    // Check webhook.site API for incoming requests to our token
-    const response = await request.get(`https://webhook.site/token/${webhookSiteToken}/requests`, {
-      ignoreHTTPSErrors: true,
-    });
+    let response;
+    try {
+      // Check webhook.site API for incoming requests to our token
+      response = await request.get(`https://webhook.site/token/${webhookSiteToken}/requests`, {
+        ignoreHTTPSErrors: true,
+        timeout: 5000,
+      });
+    } catch (error) {
+      console.warn(`Webhook pull attempt ${i + 1} failed: ${error}`);
+      await new Promise((resolve) => setTimeout(resolve, retryInterval));
+      continue;
+    }
 
     if (response.ok()) {
       const data = await response.json();
